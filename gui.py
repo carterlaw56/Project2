@@ -60,6 +60,8 @@ class ChipotleApp:
         # Builds the parts of the window that stay the same on every step:
         # header, progress bar, step label, scrollable area, and nav buttons.
 
+        # Used Claude to help create a more user-friendly interface in this function
+
         # Header banner — dark chipotle red
         self.frame_header = Frame(self.window, bg=HEADER_BG, pady=12)
         self.frame_header.pack(fill='x')
@@ -467,6 +469,7 @@ class ChipotleApp:
     def render_summary(self):
         # Renders the final summary page with macro cards and item breakdown.
 
+        # Used Claude AI to help us generate a nice summary page that renders calorie information, goal bar
         order_lines, totals = logic.build_order_lines(self.selections, self.item_lookup)
         limit     = self.selections.get("calorie_goal")
         cal_total = totals["calories"]
@@ -492,7 +495,7 @@ class ChipotleApp:
             Label(cell, text=lbl, font=("Helvetica", 9),
                   bg=color, fg="white").pack()
 
-        # Calorie limit progress bar — only shows if a limit was set
+        # Calorie limit progress bar — only shows if a limit was set - Help from Claude AI
         if limit is not None:
             frame_limit_card = self.make_card(title="Meal calorie limit")
             frame_limit = Frame(frame_limit_card, bg=CARD_BG, padx=14, pady=10)
@@ -512,7 +515,7 @@ class ChipotleApp:
                   font=("Helvetica", 11, "bold"),
                   bg=CARD_BG, fg=bar_color).pack(anchor='w', pady=(0, 6))
 
-            # Bar track + fill
+            # Bar track + fill - Help from Claude AI
             frame_bar = Frame(frame_limit, bg=BORDER_COLOR, height=12)
             frame_bar.pack(fill='x')
             frame_bar.update_idletasks()
@@ -601,7 +604,7 @@ class ChipotleApp:
 
     def show_over_limit_dialog(self, over_by):
         # Shows a popup asking if the user wants to go back or continue anyway.
-        # Does NOT reset anything — selections are kept either way.
+        # This function was created with the assistance of Claude AI
 
         pop = Toplevel(self.window)
         pop.title("Over your limit")
