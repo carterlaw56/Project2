@@ -1,0 +1,25 @@
+item_name,category,portion,calories,protein,carbs,fat
+Bowl,base,1 bowl,0,0,0,0
+Burrito Tortilla,base,1 tortilla,320,8,50,9
+Tacos (3 Soft),base,3 tortillas,210,6,33,6
+Tacos (3 Crispy),base,3 shells,195,3,27,9
+Quesadilla,base,1 whole,500,18,49,25
+White Rice,rice,4 oz,210,4,40,4
+Brown Rice,rice,4 oz,210,4,36,6
+Black Beans,beans,4 oz,130,8,22,1
+Pinto Beans,beans,4 oz,130,8,21,1
+Chicken,protein,4 oz,180,32,0,7
+Steak,protein,4 oz,150,21,1,6
+Barbacoa,protein,4 oz,170,24,2,7
+Carnitas,protein,4 oz,210,23,0,12
+Sofritas,protein,4 oz,150,8,9,10
+Fajita Veggies,veggies,3 oz,20,1,4,0
+Tomato Salsa,salsa,2 oz,25,0,4,0
+Corn Salsa,salsa,2 oz,80,3,16,1
+Green Salsa,salsa,2 oz,15,0,3,0
+Red Salsa,salsa,2 oz,30,0,4,1
+Cheese,dairy,1 oz,110,6,1,9
+Sour Cream,dairy,2 oz,120,2,2,10
+Guacamole,extras,4 oz,230,2,8,22
+Queso,extras,4 oz,120,6,8,8
+Lettuce,extras,1 oz,5,0,1,0
