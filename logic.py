@@ -210,3 +210,107 @@ def build_order_lines(selections, item_lookup):
                 add_item(it)
 
     return order_lines, totals
+
+
+# The file where past orders get saved
+ORDER_HISTORY_FILE = "order_history.csv"
+
+# These are the fields we save to the CSV — one row per order
+HISTORY_FIELDS = [
+    "date", "base", "rice", "beans", "protein",
+    "double_protein", "veggies", "salsa", "dairy", "extras",
+    "qesa_veggies", "calorie_goal",
+    "total_calories", "total_protein", "total_carbs", "total_fat"
+]
+
+
+def save_order_to_csv(selections, item_lookup):
+    # Saves the current order to order_history.csv.
+    # If the file doesn't exist yet it creates it with a header row.
+    # Multi-select fields (veggies, salsa, dairy, extras) are stored
+    # as pipe-separated strings like "Tomato Salsa|Corn Salsa".
+
+    import datetime
+
+    _, totals = build_order_lines(selections, item_lookup)
+
+    # Join list fields into a single string so they fit in one CSV cell
+    def join_list(lst):
+        return "|".join(lst) if lst else ""
+
+    row = {
+        "date":           datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "base":           selections["base"] or "",
+        "rice":           selections["rice"] or "",
+        "beans":          selections["beans"] or "",
+        "protein":        selections["protein"] or "",
+        "double_protein": selections["double_protein"],
+        "veggies":        join_list(selections["veggies"]),
+        "salsa":          join_list(selections["salsa"]),
+        "dairy":          join_list(selections["dairy"]),
+        "extras":         join_list(selections["extras"]),
+        "qesa_veggies":   selections["qesa_veggies"],
+        "calorie_goal":   selections["calorie_goal"] if selections["calorie_goal"] else "",
+        "total_calories": totals["calories"],
+        "total_protein":  totals["protein"],
+        "total_carbs":    totals["carbs"],
+        "total_fat":      totals["fat"],
+    }
+
+    file_exists = os.path.exists(ORDER_HISTORY_FILE)
+
+    try:
+        with open(ORDER_HISTORY_FILE, "a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=HISTORY_FIELDS)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(row)
+    except OSError as e:
+        raise OSError(f"Could not save order history: {e}") from e
+
+
+def load_last_order():
+    # Reads order_history.csv and returns the last saved order
+    # as a selections dict, or None if the file doesn't exist or is empty.
+
+    if not os.path.exists(ORDER_HISTORY_FILE):
+        return None
+
+    try:
+        with open(ORDER_HISTORY_FILE, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    except OSError:
+        return None
+
+    if not rows:
+        return None
+
+    last = rows[-1]
+
+    # Helper to split a pipe-separated string back into a list
+    def split_list(val):
+        if not val:
+            return []
+        return val.split("|")
+
+    # Helper to convert "True"/"False" strings back to booleans
+    def to_bool(val):
+        return val.strip().lower() == "true"
+
+    selections = fresh_selections()
+    selections["base"]           = last["base"] or None
+    selections["rice"]           = last["rice"] or None
+    selections["beans"]          = last["beans"] or None
+    selections["protein"]        = last["protein"] or None
+    selections["double_protein"] = to_bool(last["double_protein"])
+    selections["veggies"]        = split_list(last["veggies"])
+    selections["salsa"]          = split_list(last["salsa"])
+    selections["dairy"]          = split_list(last["dairy"])
+    selections["extras"]         = split_list(last["extras"])
+    selections["qesa_veggies"]   = to_bool(last["qesa_veggies"])
+
+    # Calorie goal is optional — could be blank
+    cal = last.get("calorie_goal", "").strip()
+    selections["calorie_goal"]   = int(cal) if cal else None
+
+    return selections
