@@ -1,3 +1,9 @@
 date,base,rice,beans,protein,double_protein,veggies,salsa,dairy,extras,qesa_veggies,calorie_goal,total_calories,total_protein,total_carbs,total_fat
 2026-04-29 21:20,Bowl,Brown Rice,Pinto Beans,Steak,True,Fajita Veggies,Corn Salsa|Tomato Salsa,Cheese,Queso,False,980,995,70,92,37
 2026-04-29 21:21,Bowl,Brown Rice,Pinto Beans,Steak,True,Fajita Veggies,Corn Salsa|Tomato Salsa,Cheese,Queso,False,980,995,70,92,37
+2026-04-30 16:48,Bowl,White Rice,Black Beans,Steak,True,Fajita Veggies,Tomato Salsa|Corn Salsa|Green Salsa|Red Salsa,Cheese|Sour Cream,Lettuce,False,987,1045,66,99,38
+2026-04-30 16:49,Burrito Tortilla,Brown Rice,Pinto Beans,Barbacoa,True,Fajita Veggies,Green Salsa|Red Salsa|Corn Salsa|Tomato Salsa,Sour Cream|Cheese,Lettuce|Queso|Guacamole,False,,1755,88,162,81
+2026-04-30 17:13,Burrito Tortilla,White Rice,Pinto Beans,Steak,True,Fajita Veggies,,,,False,,980,63,117,26
+2026-04-30 17:31,Quesadilla,,,Chicken,False,,,,,True,,810,57,54,41
+2026-04-30 17:37,Quesadilla,,,Barbacoa,False,,,,,True,555,800,49,56,41
+2026-04-30 17:37,Tacos (3 Soft),Brown Rice,Black Beans,Carnitas,True,Fajita Veggies,Tomato Salsa,Cheese,,False,1111,1125,71,100,46

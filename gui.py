@@ -31,8 +31,9 @@ class ChipotleApp:
     def __init__(self, window, menu_data):
         self.window = window
         self.window.title("Chipotle Nutrition Calculator")
-        self.window.geometry("600x600")
+        self.window.geometry("600x750")
         self.window.resizable(False, False)
+        self.window.minsize(600, 750)
         self.window.configure(bg=BG)
 
         # Build lookup structures from the CSV data
@@ -84,6 +85,7 @@ class ChipotleApp:
         self.scrollbar = Scrollbar(self.window, orient='vertical',
                                    command=self.scroll_canvas.yview)
         self.scroll_canvas.configure(yscrollcommand=self.on_scroll_update)
+        self.scrollbar.pack(side='right', fill='y')
         self.scroll_canvas.pack(fill='both', expand=True)
 
         self.frame_content = Frame(self.scroll_canvas, bg=BG)
@@ -107,7 +109,7 @@ class ChipotleApp:
             self.frame_nav, text="Reset", font=("Helvetica", 11, "bold"), width=8,
             bg=RESET_BG, fg="white",
             activebackground="#7A1E1E", activeforeground="white",
-            relief='flat', bd=0, highlightthickness=0, cursor="hand2",
+            relief='flat', bd=0, highlightthickness=0, cursor="arrow",
             padx=8, pady=6, command=self.reset_all)
         self.button_reset.grid(row=0, column=0)
 
@@ -119,7 +121,7 @@ class ChipotleApp:
             width=9, bg=BROWN, fg="white",
             activebackground=BROWN_DARK, activeforeground="white",
             disabledforeground="#A07860",
-            relief='flat', bd=0, highlightthickness=0, cursor="hand2",
+            relief='flat', bd=0, highlightthickness=0, cursor="arrow",
             padx=8, pady=6, command=self.go_back)
         self.button_back.pack(side='left', padx=(0, 6))
 
@@ -128,19 +130,13 @@ class ChipotleApp:
             width=11, bg=ACCENT, fg="white",
             activebackground=ACCENT_DARK, activeforeground="white",
             disabledforeground="#F5C9B8",
-            relief='flat', bd=0, highlightthickness=0, cursor="hand2",
+            relief='flat', bd=0, highlightthickness=0, cursor="arrow",
             padx=8, pady=6, command=self.go_next)
         self.button_next.pack(side='left')
 
     def on_scroll_update(self, first, last):
-        # Shows the scrollbar only when the content is taller than the window.
-        # first and last are 0.0-1.0 values tkinter passes automatically.
-        # If first is 0.0 and last is 1.0 the whole content fits — hide the bar.
-
-        if float(first) <= 0.0 and float(last) >= 1.0:
-            self.scrollbar.pack_forget()
-        else:
-            self.scrollbar.pack(side='right', fill='y')
+        # Always show the scrollbar — pack it every time
+        self.scrollbar.pack(side='right', fill='y')
         self.scrollbar.set(first, last)
 
     def clear_content(self):
@@ -212,7 +208,7 @@ class ChipotleApp:
                bg=ACCENT, fg="white",
                activebackground=ACCENT_DARK, activeforeground="white",
                relief='flat', bd=0, highlightthickness=0,
-               padx=10, pady=4, cursor="hand2",
+               padx=10, pady=4, cursor="arrow",
                command=lambda: self.load_last_order(last_order)).pack(side='right')
 
         Frame(frame_banner, bg=BROWN_DARK, height=1).pack(fill='x')
@@ -304,7 +300,7 @@ class ChipotleApp:
                 row_bg = CARD_BG
                 accent_bg = CARD_BG
 
-            frame_row = Frame(frame_card, bg=row_bg, cursor="hand2")
+            frame_row = Frame(frame_card, bg=row_bg, cursor="arrow")
             frame_row.pack(fill='x')
 
             frame_accent = Frame(frame_row, bg=accent_bg, width=4)
@@ -370,7 +366,7 @@ class ChipotleApp:
                     font=("Helvetica", 12),
                     bg=CARD_BG, fg=TEXT_MAIN,
                     activebackground=CARD_BG, selectcolor=CARD_BG,
-                    cursor="hand2").pack(anchor='w')
+                    cursor="arrow").pack(anchor='w')
 
         if self.selections["protein"]:
             note = "Doubles calories, protein, carbs and fat for your protein choice."
@@ -382,7 +378,9 @@ class ChipotleApp:
               wraplength=480, justify='left').pack(anchor='w')
 
     def render_multi(self, step_id):
-        # Renders a step where the user can check multiple options
+        # Renders a step where the user can check multiple options.
+        # Has a "None" row at the top that's selected by default when nothing is picked.
+        # Picking any item automatically unchecks None, and picking None unchecks everything.
 
         self.multi_vars = {}
         items = self.categories.get(step_id, [])
@@ -402,7 +400,13 @@ class ChipotleApp:
         row_widgets = {}
         accent_bars = {}
 
+        # None is selected when nothing in the list is picked
+        none_selected = len(self.selections[step_id]) == 0
+        none_var = BooleanVar(value=none_selected)
+        self.multi_vars["__none__"] = none_var
+
         def recolor_row(name):
+            # Updates the colors of a single row to match its checked state
             if self.multi_vars[name].get():
                 new_bg     = SEL_BG
                 new_accent = ACCENT
@@ -417,20 +421,69 @@ class ChipotleApp:
             accent_bars[name].configure(bg=new_accent)
 
         def toggle(name):
+            # Called when a real item checkbox is clicked
             var = self.multi_vars[name]
             if var.get():
+                # Item checked — uncheck None
                 if name not in self.selections[step_id]:
                     self.selections[step_id].append(name)
+                none_var.set(False)
+                recolor_row("__none__")
             else:
                 if name in self.selections[step_id]:
                     self.selections[step_id].remove(name)
+                # If nothing is selected anymore, re-check None
+                if len(self.selections[step_id]) == 0:
+                    none_var.set(True)
+                    recolor_row("__none__")
             recolor_row(name)
 
+        def toggle_none():
+            # Called when the None row is clicked — unchecks everything else
+            none_var.set(True)
+            recolor_row("__none__")
+            for name in items:
+                item_name = name["item_name"]
+                self.multi_vars[item_name].set(False)
+                recolor_row(item_name)
+            self.selections[step_id] = []
+
         def row_clicked(name):
-            # Clicking the row flips the checkbox
+            # Flips the checkbox when anywhere on the row is clicked
             self.multi_vars[name].set(not self.multi_vars[name].get())
             toggle(name)
 
+        def none_row_clicked():
+            toggle_none()
+
+        # Build the None row first
+        none_bg     = SEL_BG if none_selected else CARD_BG
+        none_accent = ACCENT if none_selected else CARD_BG
+
+        frame_none_row = Frame(frame_card, bg=none_bg, cursor="arrow")
+        frame_none_row.pack(fill='x')
+        frame_none_accent = Frame(frame_none_row, bg=none_accent, width=4)
+        frame_none_accent.pack(side='left', fill='y')
+        frame_none_inner = Frame(frame_none_row, bg=none_bg, padx=10, pady=9)
+        frame_none_inner.pack(side='left', fill='x', expand=True)
+
+        none_cb = Checkbutton(frame_none_inner, variable=none_var,
+                              bg=none_bg, activebackground=none_bg,
+                              selectcolor=CARD_BG, highlightthickness=0,
+                              cursor="arrow", command=toggle_none)
+        none_cb.pack(side='left', padx=(0, 6))
+        Label(frame_none_inner, text="None", font=("Helvetica", 11),
+              bg=none_bg, fg=TEXT_MAIN, anchor='w').pack(side='left')
+        Frame(frame_card, bg=BORDER_COLOR, height=1).pack(fill='x')
+
+        row_widgets["__none__"] = [frame_none_row, frame_none_inner, none_cb]
+        accent_bars["__none__"] = frame_none_accent
+
+        frame_none_row.bind('<Button-1>',    lambda e: none_row_clicked())
+        frame_none_inner.bind('<Button-1>',  lambda e: none_row_clicked())
+        frame_none_accent.bind('<Button-1>', lambda e: none_row_clicked())
+
+        # Build the item rows
         for item in items:
             name    = item["item_name"]
             checked = name in self.selections[step_id]
@@ -438,13 +491,13 @@ class ChipotleApp:
             self.multi_vars[name] = var
 
             if checked:
-                row_bg     = SEL_BG
-                accent_bg  = ACCENT
+                row_bg    = SEL_BG
+                accent_bg = ACCENT
             else:
-                row_bg     = CARD_BG
-                accent_bg  = CARD_BG
+                row_bg    = CARD_BG
+                accent_bg = CARD_BG
 
-            frame_row = Frame(frame_card, bg=row_bg, cursor="hand2")
+            frame_row = Frame(frame_card, bg=row_bg, cursor="arrow")
             frame_row.pack(fill='x')
 
             frame_accent = Frame(frame_row, bg=accent_bg, width=4)
@@ -456,7 +509,7 @@ class ChipotleApp:
             cb = Checkbutton(frame_inner, variable=var,
                              bg=row_bg, activebackground=row_bg,
                              selectcolor=CARD_BG, highlightthickness=0,
-                             cursor="hand2",
+                             cursor="arrow",
                              command=lambda n=name: toggle(n))
             cb.pack(side='left', padx=(0, 6))
 
@@ -472,8 +525,8 @@ class ChipotleApp:
 
             Frame(frame_card, bg=BORDER_COLOR, height=1).pack(fill='x')
 
-            row_widgets[name]  = [frame_row, frame_inner, cb]
-            accent_bars[name]  = frame_accent
+            row_widgets[name] = [frame_row, frame_inner, cb]
+            accent_bars[name] = frame_accent
 
             frame_row.bind('<Button-1>',    lambda e, n=name: row_clicked(n))
             frame_inner.bind('<Button-1>',  lambda e, n=name: row_clicked(n))
@@ -530,7 +583,7 @@ class ChipotleApp:
                 row_bg    = CARD_BG
                 accent_bg = CARD_BG
 
-            frame_row = Frame(frame_card, bg=row_bg, cursor="hand2")
+            frame_row = Frame(frame_card, bg=row_bg, cursor="arrow")
             frame_row.pack(fill='x')
 
             frame_accent = Frame(frame_row, bg=accent_bg, width=4)
@@ -710,7 +763,14 @@ class ChipotleApp:
                 frame_row.pack(fill='x')
                 Label(frame_row, text=label, font=("Helvetica", 11),
                       bg=CARD_BG, fg=TEXT_MAIN, anchor='w').pack(side='left')
-                Label(frame_row, text=f"{item['calories']} cal",
+
+                # If double protein was applied, show the doubled calorie number
+                if "(x2)" in label:
+                    display_cal = item['calories'] * 2
+                else:
+                    display_cal = item['calories']
+
+                Label(frame_row, text=f"{display_cal} cal",
                       font=("Helvetica", 10),
                       bg=CARD_BG, fg=TEXT_MUTED).pack(side='right')
                 Label(frame_row, text=cat_tag, font=("Helvetica", 9),
@@ -736,8 +796,6 @@ class ChipotleApp:
 
         elif kind == "qesa_veggies":
             self.selections["qesa_veggies"] = self.qesa_veg_var.get()
-
-
 
         elif kind == "calorie_goal":
             # Read from the local entry var we created in render_calorie_goal
@@ -774,7 +832,7 @@ class ChipotleApp:
         if self.current_step == last - 1:
             limit = self.selections.get("calorie_goal")
             if limit is not None:
-                totals  = logic.calculate_totals(self.selections, self.item_lookup)
+                _, totals = logic.build_order_lines(self.selections, self.item_lookup)
                 over_by = totals["calories"] - limit
                 if over_by > 0:
                     self.show_over_limit_dialog(over_by)
@@ -827,7 +885,7 @@ class ChipotleApp:
                bg=ACCENT, fg="white",
                activebackground=ACCENT_DARK, activeforeground="white",
                relief='flat', bd=0, highlightthickness=0,
-               padx=8, pady=6, cursor="hand2",
+               padx=8, pady=6, cursor="arrow",
                command=go_back_choice).pack(side='left', padx=(0, 8))
 
         Button(frame_buttons, text="No, continue",
@@ -835,7 +893,7 @@ class ChipotleApp:
                bg=BROWN, fg="white",
                activebackground=BROWN_DARK, activeforeground="white",
                relief='flat', bd=0, highlightthickness=0,
-               padx=8, pady=6, cursor="hand2",
+               padx=8, pady=6, cursor="arrow",
                command=continue_anyway).pack(side='left')
 
         pop.update_idletasks()
