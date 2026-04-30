@@ -2,7 +2,7 @@ from tkinter import Tk, messagebox
 import logic
 import gui
 
-# Start the app
+"""Start the app"""
 def main() -> None:
     """
     load menu from csv
@@ -22,7 +22,7 @@ def main() -> None:
         root.destroy()
         return
 
-    # everything is loaded
+    """everything is loaded"""
     root = Tk()
     gui.ChipotleApp(root, menu_data)
     root.mainloop()
