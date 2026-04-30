@@ -1,18 +1,18 @@
-# logic.py
-# Handles all the data and calculations for the Chipotle Nutrition Calculator.
-# No GUI code here, just the menu, steps, and math.
-
 import csv
 import os
+from typing import List, Dict, Tuple, Any, Optional
 
 # The CSV file that holds all the menu nutrition info
 CSV_FILE = "nutrition_info.csv"
 
-# Min and max calories a user can enter as their meal limit
+# define calorie limits
 CALORIE_MIN = 100
 CALORIE_MAX = 9999
 
-# All the steps for a regular order (bowl, burrito, tacos)
+"""
+steps for the entre
+"""
+
 ALL_STEPS = [
     ("base",           "single",       False),
     ("rice",           "single",       True),
@@ -53,11 +53,12 @@ STEP_TITLES = {
 }
 
 
-def load_menu_from_csv(filepath=CSV_FILE):
-    # Reads the nutrition_info.csv and returns a list of item dictionaries.
-    # Raises FileNotFoundError if the file is missing,
-    # and ValueError if a row has bad data.
-
+def load_menu_from_csv(filepath: str = CSV_FILE) -> List[Dict[str, Any]]:
+    """
+    Reads the nutrition_info.csv and returns a list of item dictionaries.
+    Raises FileNotFoundError if the file is missing,
+    and ValueError if a row has bad data.
+    """
     if not os.path.exists(filepath):
         raise FileNotFoundError(
             f"Could not find '{filepath}'. "
@@ -82,19 +83,20 @@ def load_menu_from_csv(filepath=CSV_FILE):
     return menu
 
 
-def build_category_index(menu):
-    # Groups the menu list into a dict by category.
-    # Example: {"base": [...], "rice": [...], ...}
-
+def build_category_index(menu: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    group menu list based on specified parameters (rice, beans, etc.)
+    """
     index = {}
     for item in menu:
         index.setdefault(item["category"], []).append(item)
     return index
 
 
-def fresh_selections():
-    # Returns a blank order — called at startup and when the user resets.
-
+def fresh_selections() -> Dict[str, Any]:
+    """
+    makes sure nothing is selected at start
+    """
     return {
         "base":           None,
         "rice":           None,
@@ -110,27 +112,30 @@ def fresh_selections():
     }
 
 
-def is_quesadilla(selections):
-    # Returns True if the user picked Quesadilla as their base.
-
+def is_quesadilla(selections: Dict[str, Any]) -> bool:
+    """
+    Returns True if the user picked Quesadilla as their entre
+    """
     return selections.get("base") == "Quesadilla"
 
 
-def active_steps(selections):
-    # Returns the right step list depending on what base was chosen.
-
+def active_steps(selections: Dict[str, Any]) -> List[Tuple[str, str, bool]]:
+    """
+    Returns the right step list depending on what base was chosen.
+    """
     if is_quesadilla(selections):
         return QUESADILLA_STEPS
     return ALL_STEPS
 
 
-def validate_calorie_goal(raw_text):
-    # Checks if the calorie limit the user typed is valid.
-    # Returns (True, number, "") if good, or (False, None, error message) if bad.
-
+def validate_calorie_goal(raw_text: str) -> Tuple[bool, Optional[int], str]:
+    """
+    Checks if the calorie limit the user is valid.
+    Returns (True, number, "") if good, or (False, None, error message) if bad.
+    """
     text = raw_text.strip()
 
-    # Blank is fine — means they skipped the limit
+    # Blank means skipped
     if text == "":
         return True, None, ""
 
@@ -144,7 +149,7 @@ def validate_calorie_goal(raw_text):
     except ValueError:
         return False, None, "Calorie limit must be a number."
 
-    # Check it's in a reasonable range
+    # check range
     if goal < CALORIE_MIN:
         return False, None, f"Calorie limit must be at least {CALORIE_MIN}."
     if goal > CALORIE_MAX:
@@ -153,15 +158,17 @@ def validate_calorie_goal(raw_text):
     return True, goal, ""
 
 
-def build_order_lines(selections, item_lookup):
-    # Figures out which items the user picked and adds up the nutrition totals.
-    # Returns a list of (label, category, item_dict) and a totals dict.
-
+def build_order_lines(selections: Dict[str, Any], item_lookup: Dict[str, Dict[str, Any]]) -> Tuple[List[Tuple[str, str, Dict[str, Any]]], Dict[str, int]]:
+    """
+    Figures out which items the user picked and adds up the total.
+    """
     totals = {"calories": 0, "protein": 0, "carbs": 0, "fat": 0}
     order_lines = []
 
-    def add_item(item, mult=1):
-        # Adds one item's macros to the running totals
+    def add_item(item: Dict[str, Any], mult: int = 1) -> None:
+        """
+        Adds one item's macros to the running totals
+        """
         for key in totals:
             totals[key] += item[key] * mult
 
@@ -181,14 +188,14 @@ def build_order_lines(selections, item_lookup):
             order_lines.append((selections["protein"], "protein", it))
             add_item(it)
 
-        # Optional fajita veggies
+        # ask fajitas
         if selections["qesa_veggies"]:
             veg = item_lookup["Fajita Veggies"]
             order_lines.append(("Fajita Veggies", "veggies", veg))
             add_item(veg)
 
     else:
-        # Regular build — bowl, burrito, tacos
+        # Regular
         for cat in ("base", "rice", "beans"):
             name = selections[cat]
             if name:
@@ -224,18 +231,18 @@ HISTORY_FIELDS = [
 ]
 
 
-def save_order_to_csv(selections, item_lookup):
-    # Saves the current order to order_history.csv.
-    # If the file doesn't exist yet it creates it with a header row.
-    # Multi-select fields (veggies, salsa, dairy, extras) are stored
-    # as pipe-separated strings like "Tomato Salsa|Corn Salsa".
-
+def save_order_to_csv(selections: Dict[str, Any], item_lookup: Dict[str, Dict[str, Any]]) -> None:
+    """
+    Saves the current order to order_history.csv.
+    """
     import datetime
 
     _, totals = build_order_lines(selections, item_lookup)
 
-    # Join list fields into a single string so they fit in one CSV cell
-    def join_list(lst):
+    def join_list(lst: List[str]) -> str:
+        """
+        Join list into one fiel
+        """
         return "|".join(lst) if lst else ""
 
     row = {
@@ -269,10 +276,10 @@ def save_order_to_csv(selections, item_lookup):
         raise OSError(f"Could not save order history: {e}") from e
 
 
-def load_last_order():
-    # Reads order_history.csv and returns the last saved order
-    # as a selections dict, or None if the file doesn't exist or is empty.
-
+def load_last_order() -> Optional[Dict[str, Any]]:
+    """
+    Reads order_history.csv and returns the last saved order
+    """
     if not os.path.exists(ORDER_HISTORY_FILE):
         return None
 
@@ -287,14 +294,18 @@ def load_last_order():
 
     last = rows[-1]
 
-    # Helper to split a pipe-separated string back into a list
-    def split_list(val):
+    def split_list(val: str) -> List[str]:
+        """
+        Helper to split a pipe-separated string back into a list
+        """
         if not val:
             return []
         return val.split("|")
 
-    # Helper to convert "True"/"False" strings back to booleans
-    def to_bool(val):
+    def to_bool(val: str) -> bool:
+        """
+        Helper to convert "True"/"False" strings back to booleans
+        """
         return val.strip().lower() == "true"
 
     selections = fresh_selections()

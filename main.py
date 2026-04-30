@@ -1,18 +1,12 @@
-# main.py
-# This is the entry point for the Chipotle Nutrition Calculator.
-# Run this file to start the program.
-# - logic.py handles all the data and calculations
-# - gui.py handles all the GUI/window stuff
-# - main.py just loads the data and starts the window
-
 from tkinter import Tk, messagebox
 import logic
 import gui
 
-
-def main():
-    # Load the menu data from the CSV file
-    # If something goes wrong, show an error and exit cleanly
+# Start the app
+def main() -> None:
+    """
+    load menu from csv
+    """
     try:
         menu_data = logic.load_menu_from_csv()
     except FileNotFoundError as e:
@@ -28,7 +22,7 @@ def main():
         root.destroy()
         return
 
-    # Everything loaded fine — create the window and start the app
+    # everything is loaded
     root = Tk()
     gui.ChipotleApp(root, menu_data)
     root.mainloop()
