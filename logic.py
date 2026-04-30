@@ -2,8 +2,8 @@ import csv
 import os
 from typing import List, Dict, Tuple, Any, Optional
 
-"""The CSV file that holds all the menu nutrition info""
-CSV_FILE = "nutrition_info.csv"""
+"""The CSV file that holds all the menu nutrition info"""
+CSV_FILE = "nutrition_info.csv"
 
 """define calorie limits"""
 
@@ -148,7 +148,7 @@ def validate_calorie_goal(raw_text: str) -> Tuple[bool, Optional[int], str]:
     except ValueError:
         return False, None, "Calorie limit must be a number."
 
-     """range"""
+    """range"""
     if goal < CALORIE_MIN:
         return False, None, f"Calorie limit must be at least {CALORIE_MIN}."
     if goal > CALORIE_MAX:

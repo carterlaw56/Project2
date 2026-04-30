@@ -1,6 +1,6 @@
-# gui.py
+"""# gui.py
 # Handles all the windows, buttons, and display for the Chipotle Nutrition Calculator.
-# All the data and math is in logic.py.
+# All the data and math is in logic.py."""
 
 from tkinter import *
 from tkinter import messagebox
@@ -35,12 +35,12 @@ class ChipotleApp:
         self.window.resizable(False, False)
         self.window.configure(bg=BG)
 
-"""Build lookup structures from the CSV data"""
+        """Build lookup structures from the CSV data"""
         self.menu_data   = menu_data
         self.categories  = logic.build_category_index(menu_data)
         self.item_lookup = {item["item_name"]: item for item in menu_data}
 
-"""tk variables for the current step's selections"""
+        """tk variables for the current step's selections"""
         self.single_var   = StringVar()
         self.double_var   = BooleanVar()
         self.qesa_veg_var = BooleanVar()
@@ -239,11 +239,11 @@ class ChipotleApp:
 
         self.selections = last_order
 
-    """Sync the tk variables to match the loaded order"""
+        """Sync the tk variables to match the loaded order"""
         self.qesa_veg_var.set(self.selections["qesa_veggies"])
         self.double_var.set(self.selections["double_protein"])
 
-    """Jump straight to the last step (summary)"""
+        """Jump straight to the last step (summary)"""
         steps = logic.active_steps(self.selections)
         self.current_step = len(steps) - 1
 
@@ -256,7 +256,7 @@ class ChipotleApp:
         self.single_step = step_id
         items = self.categories.get(step_id, [])
 
-    """Restore what was saved before, or default to first item / none"""
+        """Restore what was saved before, or default to first item / none"""
         if self.selections[step_id] is not None:
             init_val = self.selections[step_id]
         elif allow_none:
@@ -266,7 +266,7 @@ class ChipotleApp:
 
         self.single_var.set(init_val)
 
-"""Outer card frame"""
+        """Outer card frame"""
         frame_outer = Frame(self.frame_content, bg=BG, padx=16, pady=8)
         frame_outer.pack(fill='x')
         frame_card = Frame(frame_outer, bg=CARD_BG,
@@ -279,7 +279,7 @@ class ChipotleApp:
         accent_bars = {}
 
         def select(val):
-         """Called when user clicks a row — updates color of all rows"""
+            """Called when user clicks a row — updates color of all rows"""
             self.single_var.set(val)
             for v in row_widgets:
                 if v == val:
@@ -609,7 +609,7 @@ class ChipotleApp:
         self.entry_calorie.pack(side='left', padx=(10, 0))
         self.entry_calorie.focus_set()
 
-    """Error label — shown when input is bad"""
+        """Error label — shown when input is bad"""
         self.label_calorie_error = Label(frame_card, text="",
                                           font=("Helvetica", 10),
                                           bg=CARD_BG, fg=RESET_BG,
@@ -843,7 +843,7 @@ class ChipotleApp:
         pop.geometry(f"+{x}+{y}")
 
     def go_back(self):
-         """Saves the current step and moves back one step"""
+        """Saves the current step and moves back one step"""
 
         self.save_step()
         if self.current_step > 0:
