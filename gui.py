@@ -1,7 +1,7 @@
-"""# gui.py
-# Handles all the windows, buttons, and display for the Chipotle Nutrition Calculator.
-# All the data and math is in logic.py."""
-
+""" gui.py
+ Handles all the windows, buttons, and display for the Chipotle Nutrition Calculator.
+ All the data and math is in logic.py.
+"""
 from tkinter import *
 from tkinter import messagebox
 import logic
