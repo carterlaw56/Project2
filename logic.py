@@ -2,16 +2,15 @@ import csv
 import os
 from typing import List, Dict, Tuple, Any, Optional
 
-# The CSV file that holds all the menu nutrition info
-CSV_FILE = "nutrition_info.csv"
+"""The CSV file that holds all the menu nutrition info""
+CSV_FILE = "nutrition_info.csv"""
 
-# define calorie limits
+"""define calorie limits"""
+
 CALORIE_MIN = 100
 CALORIE_MAX = 9999
 
-"""
-steps for the entre
-"""
+"""steps for the entre"""
 
 ALL_STEPS = [
     ("base",           "single",       False),
@@ -27,7 +26,8 @@ ALL_STEPS = [
     ("summary",        "summary",      False),
 ]
 
-# Quesadilla skips most steps — cheese is always included
+"""Quesadilla skips most steps — cheese is always included"""
+
 QUESADILLA_STEPS = [
     ("base",           "single",       False),
     ("protein",        "single",       True),
@@ -36,7 +36,7 @@ QUESADILLA_STEPS = [
     ("summary",        "summary",      False),
 ]
 
-# What each step shows as its title in the UI
+"""What each step shows"""
 STEP_TITLES = {
     "base":           "Choose your base",
     "rice":           "Choose your rice",
@@ -121,7 +121,7 @@ def is_quesadilla(selections: Dict[str, Any]) -> bool:
 
 def active_steps(selections: Dict[str, Any]) -> List[Tuple[str, str, bool]]:
     """
-    Returns the right step list depending on what base was chosen.
+    Returns the right step list depending on what entre was chosen.
     """
     if is_quesadilla(selections):
         return QUESADILLA_STEPS
@@ -131,25 +131,24 @@ def active_steps(selections: Dict[str, Any]) -> List[Tuple[str, str, bool]]:
 def validate_calorie_goal(raw_text: str) -> Tuple[bool, Optional[int], str]:
     """
     Checks if the calorie limit the user is valid.
-    Returns (True, number, "") if good, or (False, None, error message) if bad.
     """
     text = raw_text.strip()
 
-    # Blank means skipped
+    """Blank skipped"""
     if text == "":
         return True, None, ""
 
-    # No decimals allowed
+    """No decimals"""
     if "." in text:
         return False, None, "Please enter a whole number, not a decimal."
 
-    # Must actually be a number
+    """Must be number"""
     try:
         goal = int(text)
     except ValueError:
         return False, None, "Calorie limit must be a number."
 
-    # check range
+     """range"""
     if goal < CALORIE_MIN:
         return False, None, f"Calorie limit must be at least {CALORIE_MIN}."
     if goal > CALORIE_MAX:
@@ -173,7 +172,7 @@ def build_order_lines(selections: Dict[str, Any], item_lookup: Dict[str, Dict[st
             totals[key] += item[key] * mult
 
     if is_quesadilla(selections):
-        # Quesadilla always has the shell + cheese
+        """Quesadilla always has the shell + cheese"""
         base_item = item_lookup["Quesadilla"]
         order_lines.append(("Quesadilla", "base", base_item))
         add_item(base_item)
@@ -182,20 +181,20 @@ def build_order_lines(selections: Dict[str, Any], item_lookup: Dict[str, Dict[st
         order_lines.append(("Cheese (included)", "dairy", cheese))
         add_item(cheese)
 
-        # Optional protein
+        """Optional protein for quesadilla"""
         if selections["protein"]:
             it = item_lookup[selections["protein"]]
             order_lines.append((selections["protein"], "protein", it))
             add_item(it)
 
-        # ask fajitas
+        """ask fajitas"""
         if selections["qesa_veggies"]:
             veg = item_lookup["Fajita Veggies"]
             order_lines.append(("Fajita Veggies", "veggies", veg))
             add_item(veg)
 
     else:
-        # Regular
+        """Regular"""
         for cat in ("base", "rice", "beans"):
             name = selections[cat]
             if name:
@@ -219,10 +218,10 @@ def build_order_lines(selections: Dict[str, Any], item_lookup: Dict[str, Dict[st
     return order_lines, totals
 
 
-# The file where past orders get saved
+"""The file where past orders get saved"""
 ORDER_HISTORY_FILE = "order_history.csv"
 
-# These are the fields we save to the CSV — one row per order
+"""These are the fields we save to the CSV — one row per order"""
 HISTORY_FIELDS = [
     "date", "base", "rice", "beans", "protein",
     "double_protein", "veggies", "salsa", "dairy", "extras",
@@ -320,7 +319,8 @@ def load_last_order() -> Optional[Dict[str, Any]]:
     selections["extras"]         = split_list(last["extras"])
     selections["qesa_veggies"]   = to_bool(last["qesa_veggies"])
 
-    # Calorie goal is optional — could be blank
+    """Calorie goal is optional — could be blank"""
+
     cal = last.get("calorie_goal", "").strip()
     selections["calorie_goal"]   = int(cal) if cal else None
 
