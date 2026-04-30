@@ -737,6 +737,8 @@ class ChipotleApp:
         elif kind == "qesa_veggies":
             self.selections["qesa_veggies"] = self.qesa_veg_var.get()
 
+
+
         elif kind == "calorie_goal":
             # Read from the local entry var we created in render_calorie_goal
             raw = self.entry_calorie_text.get()
