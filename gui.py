@@ -1,3 +1,6 @@
+from tkinter import *
+import logic
+
 BG           = "#F5F0EB"   # page background
 CARD_BG      = "#FFFFFF"   # white card background
 HEADER_BG    = "#7B1113"   # dark chipotle red header
