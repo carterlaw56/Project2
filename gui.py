@@ -232,28 +232,23 @@ class ChipotleApp:
               font=("Helvetica", 10, "bold"), bg=BROWN, fg="white").pack(anchor='w', pady=(4, 0))
 
     def load_last_order(self, last_order):
-        # Loads the saved order into selections and jumps to the summary step
+        """load the last saved order if theres one in the csdv file"""
 
         self.selections = last_order
-
-        # Sync the tk variables to match the loaded order
         self.qesa_veg_var.set(self.selections["qesa_veggies"])
         self.double_var.set(self.selections["double_protein"])
-
-        # Jump straight to the last step (summary)
         steps = logic.active_steps(self.selections)
         self.current_step = len(steps) - 1
 
         self.show_step()
 
     def render_single(self, step_id, allow_none):
-        # Renders a step where the user picks one option using radio buttons.
-        # Clicking any row highlights it and saves the choice.
+        """render the steps when the user needs the circle button things"""
 
         self.single_step = step_id
         items = self.categories.get(step_id, [])
 
-        # Restore what was saved before, or default to first item / none
+        """default items if needed"""
         if self.selections[step_id] is not None:
             init_val = self.selections[step_id]
         elif allow_none:
@@ -263,21 +258,17 @@ class ChipotleApp:
 
         self.single_var.set(init_val)
 
-        # Outer card frame
         frame_outer = Frame(self.frame_content, bg=BG, padx=16, pady=8)
         frame_outer.pack(fill='x')
         frame_card = Frame(frame_outer, bg=CARD_BG,
                            highlightthickness=1, highlightbackground=BORDER_COLOR)
         frame_card.pack(fill='x')
 
-        # Keep track of every widget in each row so we can change their color
-        # when the user picks a different option
-        # row_widgets[val] = list of all widgets in that row
         row_widgets = {}
         accent_bars = {}
 
         def select(val):
-            # Called when user clicks a row — updates color of all rows
+           """update row colors"""
             self.single_var.set(val)
             for v in row_widgets:
                 if v == val:
@@ -325,11 +316,11 @@ class ChipotleApp:
 
             Frame(frame_card, bg=BORDER_COLOR, height=1).pack(fill='x')
 
-            # Store every widget in this row so select() can recolor them
+            """make it so they can be redrawn/recolored or whatever"""
             row_widgets[val] = [frame_row, frame_inner, rb]
             accent_bars[val] = frame_accent
 
-            # Clicking anywhere on the row works the same as the radio button
+            """make so clicking the row also clicks the button"""
             frame_row.bind('<Button-1>',   lambda e, v=val: select(v))
             frame_inner.bind('<Button-1>', lambda e, v=val: select(v))
             frame_accent.bind('<Button-1>',lambda e, v=val: select(v))
@@ -345,7 +336,7 @@ class ChipotleApp:
             add_row(item["item_name"], item["item_name"], sub)
 
     def render_toggle(self):
-        # Renders the double protein step — just a single checkbox
+        """show the double meat if the entre isn't veggie"""
 
         self.double_var.set(self.selections["double_protein"])
 
@@ -379,9 +370,7 @@ class ChipotleApp:
               wraplength=480, justify='left').pack(anchor='w')
 
     def render_multi(self, step_id):
-        # Renders a step where the user can check multiple options.
-        # Has a "None" row at the top that's selected by default when nothing is picked.
-        # Picking any item automatically unchecks None, and picking None unchecks everything.
+        """allow user to check multiple items, like choosing salsas"""
 
         self.multi_vars = {}
         items = self.categories.get(step_id, [])
@@ -397,7 +386,7 @@ class ChipotleApp:
                   font=("Helvetica", 11), bg=CARD_BG, fg=TEXT_MUTED, pady=12).pack()
             return
 
-        # row_widgets and accent_bars let us recolor rows when checked/unchecked
+        """recolor rows and buttons and stuff when not checked"""
         row_widgets = {}
         accent_bars = {}
 
@@ -407,7 +396,7 @@ class ChipotleApp:
         self.multi_vars["__none__"] = none_var
 
         def recolor_row(name):
-            # Updates the colors of a single row to match its checked state
+            """updates colors of the row"""
             if self.multi_vars[name].get():
                 new_bg     = SEL_BG
                 new_accent = ACCENT
@@ -422,7 +411,7 @@ class ChipotleApp:
             accent_bars[name].configure(bg=new_accent)
 
         def toggle(name):
-            # Called when a real item checkbox is clicked
+            """checkbox function for the buttons"""
             var = self.multi_vars[name]
             if var.get():
                 # Item checked — uncheck None
@@ -433,14 +422,13 @@ class ChipotleApp:
             else:
                 if name in self.selections[step_id]:
                     self.selections[step_id].remove(name)
-                # If nothing is selected anymore, re-check None
                 if len(self.selections[step_id]) == 0:
                     none_var.set(True)
                     recolor_row("__none__")
             recolor_row(name)
 
         def toggle_none():
-            # Called when the None row is clicked — unchecks everything else
+            """uncheck everything else"""
             none_var.set(True)
             recolor_row("__none__")
             for name in items:
@@ -450,14 +438,14 @@ class ChipotleApp:
             self.selections[step_id] = []
 
         def row_clicked(name):
-            # Flips the checkbox when anywhere on the row is clicked
+            """click button on the same row if clicked by the userr"""
             self.multi_vars[name].set(not self.multi_vars[name].get())
             toggle(name)
 
         def none_row_clicked():
             toggle_none()
 
-        # Build the None row first
+        """create the "none" row first"""
         none_bg     = SEL_BG if none_selected else CARD_BG
         none_accent = ACCENT if none_selected else CARD_BG
 
@@ -484,7 +472,7 @@ class ChipotleApp:
         frame_none_inner.bind('<Button-1>',  lambda e: none_row_clicked())
         frame_none_accent.bind('<Button-1>', lambda e: none_row_clicked())
 
-        # Build the item rows
+        """crate rows for each item"""
         for item in items:
             name    = item["item_name"]
             checked = name in self.selections[step_id]
@@ -534,8 +522,7 @@ class ChipotleApp:
             frame_accent.bind('<Button-1>', lambda e, n=name: row_clicked(n))
 
     def render_qesa_veggies(self):
-        # Renders the fajita veggies yes/no step for quesadillas
-        # Works just like render_single but with True/False instead of item names
+        """yes/no screen to ask if the user wanted veggies on teh quesadilla"""
 
         self.qesa_veg_var.set(self.selections["qesa_veggies"])
 
@@ -619,9 +606,7 @@ class ChipotleApp:
         add_row(True, "Yes, add fajita veggies", "20 cal  ·  3 oz")
 
     def render_calorie_goal(self):
-        # Renders the calorie limit entry step.
-        # The user types a number and clicks Check, or leaves it blank to skip.
-
+        """calorie limit"""
         frame_outer = Frame(self.frame_content, bg=BG, padx=16, pady=8)
         frame_outer.pack(fill='x')
         frame_card = Frame(frame_outer, bg=CARD_BG,
@@ -646,9 +631,7 @@ class ChipotleApp:
         frame_entry.pack(fill='x')
 
         Label(frame_entry, text="Calorie limit (kcal):",
-              font=("Helvetica", 11), bg=CARD_BG, fg=TEXT_MAIN).pack(side='left')
-
-        # Pre-fill with what was saved before
+              font=("Helvetica", 11), bg=CARD_BG, fg=TEXT_MAIN).pack(side='left'
         saved = self.selections.get("calorie_goal")
         if saved is None:
             self.entry_calorie_text = StringVar(value="")
@@ -664,7 +647,7 @@ class ChipotleApp:
         self.entry_calorie.pack(side='left', padx=(10, 0))
         self.entry_calorie.focus_set()
 
-        # Error label — shown when input is bad
+        """show error if something or input is wrong"""
         self.label_calorie_error = Label(frame_card, text="",
                                           font=("Helvetica", 10),
                                           bg=CARD_BG, fg=RESET_BG,
@@ -672,13 +655,11 @@ class ChipotleApp:
         self.label_calorie_error.pack(anchor='w')
 
     def render_summary(self):
-        # Renders the final summary page with macro cards and item list
+        """creates the end summary page"""
 
         order_lines, totals = logic.build_order_lines(self.selections, self.item_lookup)
         limit     = self.selections.get("calorie_goal")
         cal_total = totals["calories"]
-
-        # Macro cards — calories card goes red if over the limit
         frame_macros = Frame(self.frame_content, bg=BG, padx=16, pady=10)
         frame_macros.pack(fill='x')
 
@@ -705,7 +686,8 @@ class ChipotleApp:
                   bg=color, fg="white").pack()
             col += 1
 
-        # Calorie limit bar — only shows if the user set a limit
+        """bar to visualize calorie limit if the user put in a limit at all. 
+        -- assistance from claude ai to help create the graph for the bar"""
         if limit is not None:
             frame_outer2 = Frame(self.frame_content, bg=BG, padx=16, pady=4)
             frame_outer2.pack(fill='x')
@@ -734,7 +716,7 @@ class ChipotleApp:
                   font=("Helvetica", 11, "bold"),
                   bg=CARD_BG, fg=bar_color).pack(anchor='w', pady=(0, 6))
 
-            # Draw the bar as two stacked frames (track + fill)
+            """put the bar on top"""
             frame_bar_track = Frame(frame_limit, bg=BORDER_COLOR, height=12)
             frame_bar_track.pack(fill='x')
             frame_bar_track.update_idletasks()
@@ -743,7 +725,7 @@ class ChipotleApp:
             Frame(frame_bar_track, bg=bar_color, height=12,
                   width=int(bar_w * pct)).place(x=0, y=0)
 
-        # Item list
+        """list the items chosemn by the user"""
         frame_outer3 = Frame(self.frame_content, bg=BG, padx=16, pady=4)
         frame_outer3.pack(fill='x')
         frame_card = Frame(frame_outer3, bg=CARD_BG,
@@ -765,7 +747,7 @@ class ChipotleApp:
                 Label(frame_row, text=label, font=("Helvetica", 11),
                       bg=CARD_BG, fg=TEXT_MAIN, anchor='w').pack(side='left')
 
-                # If double protein was applied, show the doubled calorie number
+                """multiply calories if user chooses double"""
                 if "(x2)" in label:
                     display_cal = item['calories'] * 2
                 else:
@@ -779,8 +761,7 @@ class ChipotleApp:
                 Frame(frame_card, bg=BORDER_COLOR, height=1).pack(fill='x')
 
     def save_step(self):
-        # Reads the current step's widget state and saves it to self.selections.
-        # Multi steps save automatically on each click so nothing needed there.
+        """saves each click"""
 
         steps = logic.active_steps(self.selections)
         _, kind, _ = steps[self.current_step]
@@ -799,16 +780,13 @@ class ChipotleApp:
             self.selections["qesa_veggies"] = self.qesa_veg_var.get()
 
         elif kind == "calorie_goal":
-            # Read from the local entry var we created in render_calorie_goal
             raw = self.entry_calorie_text.get()
             ok, parsed, _ = logic.validate_calorie_goal(raw)
             if ok:
                 self.selections["calorie_goal"] = parsed
 
     def go_next(self):
-        # Saves current step and tries to move forward.
-        # Shows errors if base not selected or calorie input is bad.
-        # Shows a warning popup if the order is over the calorie limit.
+        """saves next step and moves forward, or raise issues"""
 
         self.save_step()
 
@@ -816,12 +794,12 @@ class ChipotleApp:
         step_id, kind, _ = steps[self.current_step]
         last    = len(steps) - 1
 
-        # Base is required
+        """make the customer choose a base"""
         if step_id == "base" and not self.selections["base"]:
             self.show_popup("Please choose a base before continuing.")
             return
 
-        # Check calorie input is valid before moving past that step
+        """validate input for calorie goal"""
         if kind == "calorie_goal":
             raw = self.entry_calorie_text.get()
             ok, _, err = logic.validate_calorie_goal(raw)
@@ -829,7 +807,7 @@ class ChipotleApp:
                 self.label_calorie_error.config(text=err)
                 return
 
-        # If moving to summary, check if over the limit
+        """check if the user's entre is over their calorie limit"""
         if self.current_step == last - 1:
             limit = self.selections.get("calorie_goal")
             if limit is not None:
@@ -844,9 +822,7 @@ class ChipotleApp:
             self.show_step()
 
     def show_over_limit_dialog(self, over_by):
-        # Pops up a yes/no dialog when the meal is over the calorie limit.
-        # Yes = go back one step keeping all selections.
-        # No = go to summary anyway.
+        """yes/no popup if over the limit"""
 
         pop = Toplevel(self.window)
         pop.title("Over your limit")
@@ -903,7 +879,7 @@ class ChipotleApp:
         pop.geometry(f"+{x}+{y}")
 
     def go_back(self):
-        # Saves the current step and moves back one step
+        """save current step and move back"""
 
         self.save_step()
         if self.current_step > 0:
@@ -911,7 +887,7 @@ class ChipotleApp:
             self.show_step()
 
     def update_nav_buttons(self):
-        # Updates the Back and Next/Summary/Done buttons based on which step we're on
+        """display correct bottom buttons like next/back"""
 
         steps = logic.active_steps(self.selections)
         last  = len(steps) - 1
@@ -932,8 +908,7 @@ class ChipotleApp:
                                     command=self.go_next)
 
     def finish_order(self):
-        # Called when the user clicks Done on the summary page.
-        # Saves the order to the CSV history file then resets.
+        """called when the user is done with the order"""
 
         try:
             logic.save_order_to_csv(self.selections, self.item_lookup)
@@ -943,7 +918,7 @@ class ChipotleApp:
         self.reset_all()
 
     def reset_all(self):
-        # Resets everything back to a blank order and goes to step 1
+        """reset everything and go back to da beginning"""
 
         self.selections   = logic.fresh_selections()
         self.current_step = 0
@@ -952,7 +927,7 @@ class ChipotleApp:
         self.show_step()
 
     def show_popup(self, msg):
-        # Shows a small centered dialog with a message and an OK button
+        """create ok button"""
 
         pop = Toplevel(self.window)
         pop.title("")
