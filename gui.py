@@ -1,12 +1,4 @@
-# gui.py
-# Handles all the windows, buttons, and display for the Chipotle Nutrition Calculator.
-# All the data and math is in logic.py.
 
-from tkinter import *
-from tkinter import messagebox
-import logic
-
-# Colors used throughout the app
 BG           = "#F5F0EB"   # page background
 CARD_BG      = "#FFFFFF"   # white card background
 HEADER_BG    = "#7B1113"   # dark chipotle red header
@@ -36,22 +28,22 @@ class ChipotleApp:
         self.window.minsize(600, 750)
         self.window.configure(bg=BG)
 
-        # Build lookup structures from the CSV data
+        """Build lookup structures from the CSV data"""
         self.menu_data   = menu_data
         self.categories  = logic.build_category_index(menu_data)
-        # Build a dictionary so we can look up any item by its name quickly
+        """dictionary to look at item"""
         self.item_lookup = {}
         for item in menu_data:
             self.item_lookup[item["item_name"]] = item
 
-        # tk variables for the current step's selections
+        "tk variables for the current step's selections"""
         self.single_var   = StringVar()
         self.double_var   = BooleanVar()
         self.qesa_veg_var = BooleanVar()
         self.multi_vars   = {}
         self.single_step  = None
 
-        # Start with a blank order
+        """start blank"""
         self.selections   = logic.fresh_selections()
         self.current_step = 0
 
@@ -59,8 +51,7 @@ class ChipotleApp:
         self.show_step()
 
     def build_window(self):
-        # Creates all the permanent parts of the window that never change:
-        # the header, progress bar, step label, scrollable area, and nav buttons.
+        """create window that really doesn't change much"""
 
         # Dark red header
         self.frame_header = Frame(self.window, bg=HEADER_BG, pady=12)
@@ -71,19 +62,19 @@ class ChipotleApp:
         Label(self.frame_header, text="Build your meal · track your macros",
               font=("Helvetica", 10), bg=HEADER_BG, fg="#FAECE7").pack(pady=(2, 0))
 
-        # Progress bar drawn on a canvas
+        """create progress bar. some assistance from claude AI to figure out how to plot the bar"""
         self.prog_canvas = Canvas(self.window, height=5, bg=BORDER_COLOR,
                                   highlightthickness=0, bd=0)
         self.prog_canvas.pack(fill='x')
         self.prog_fill = self.prog_canvas.create_rectangle(0, 0, 0, 5,
                                                             fill=ACCENT, outline="")
 
-        # Step counter label e.g. "Step 2 of 11 · Choose your rice"
+        """step counter"""
         self.label_step = Label(self.window, text="", font=("Helvetica", 11),
                                 bg=BG, fg=TEXT_MUTED, pady=7)
         self.label_step.pack()
 
-        # Scrollable content area
+        """create scrollable areas, especailly for the end summary page"""
         self.scroll_canvas = Canvas(self.window, bg=BG, highlightthickness=0, bd=0)
         self.scrollbar = Scrollbar(self.window, orient='vertical',
                                    command=self.scroll_canvas.yview)
@@ -99,7 +90,7 @@ class ChipotleApp:
         self.scroll_canvas.bind('<Configure>', self.on_canvas_resize)
         self.scroll_canvas.bind_all('<MouseWheel>', self.on_mousewheel)
 
-        # Navigation bar at the bottom
+        """buttons and stuff to navigate at the bottom of the window"""
         self.frame_nav = Frame(self.window, bg=BG, pady=9)
         self.frame_nav.pack(fill='x', padx=18)
         self.frame_nav.columnconfigure(1, weight=1)
@@ -134,30 +125,29 @@ class ChipotleApp:
         self.button_next.pack(side='left')
 
     def on_frame_resize(self, event):
-        # Updates the scroll region when the content frame changes size
+        """change scroll area of the window size changes"""
         self.scroll_canvas.configure(
             scrollregion=self.scroll_canvas.bbox('all'))
 
     def on_canvas_resize(self, event):
-        # Makes the content frame stretch to fill the canvas width
+        """fill contents to window width"""
         self.scroll_canvas.itemconfig(self.content_window, width=event.width)
 
     def on_mousewheel(self, event):
-        # Scrolls the canvas when the user uses the mouse wheel
+       """allow the window to scroll using a real scroll wheel"""
         self.scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
 
     def on_scroll_update(self, first, last):
-        # Always show the scrollbar — pack it every time
         self.scrollbar.pack(side='right', fill='y')
         self.scrollbar.set(first, last)
 
     def clear_content(self):
-        # Destroys all widgets inside the scrollable area so we can redraw
+        """removes everything to redraw"""
         for widget in self.frame_content.winfo_children():
             widget.destroy()
 
     def show_step(self):
-        # Clears the content area and draws the current step
+        """clear content and show current step"""
 
         self.clear_content()
 
@@ -165,13 +155,13 @@ class ChipotleApp:
         step_id, kind, allow_none = steps[self.current_step]
         total = len(steps)
 
-        # Show the last order banner on step 1 if a saved order exists
+        """show last order"""
         if self.current_step == 0:
             last_order = logic.load_last_order()
             if last_order is not None:
                 self.render_last_order_banner(last_order)
 
-        # Update progress bar width
+        """update progress bar"""
         self.prog_canvas.update_idletasks()
         bar_width = self.prog_canvas.winfo_width()
         pct = self.current_step / (total - 1)
@@ -197,8 +187,7 @@ class ChipotleApp:
         self.scroll_canvas.yview_moveto(0)
 
     def render_last_order_banner(self, last_order):
-        # Shows a dark brown banner on step 1 with the last order details
-        # and a button to jump straight to the summary with that order loaded
+        """banner for the last order"""
 
         frame_outer = Frame(self.frame_content, bg=BG, padx=16, pady=8)
         frame_outer.pack(fill='x')
@@ -227,7 +216,7 @@ class ChipotleApp:
 
         order_lines, totals = logic.build_order_lines(last_order, self.item_lookup)
 
-        # Build a comma separated list of what was in the last order
+        """csv file formatting"""
         items_text = ",  ".join(label for label, _, _ in order_lines)
 
         frame_body = Frame(frame_banner, bg=BROWN, padx=14, pady=8)
