@@ -119,13 +119,19 @@ def is_quesadilla(selections: Dict[str, Any]) -> bool:
     return selections.get("base") == "Quesadilla"
 
 
-def active_steps(selections: Dict[str, Any]) -> List[Tuple[str, str, bool]]:
-    """
-    Returns the right step list depending on what entre was chosen.
-    """
-    if is_quesadilla(selections):
+def active_steps(selections):
+    # Returns the correct step list based on what base was chosen.
+    # Also removes the double protein step if no protein was selected.
+
+    if selections["base"] == "Quesadilla":
         return QUESADILLA_STEPS
-    return ALL_STEPS
+
+    steps = []
+    for step in ALL_STEPS:
+        if step[0] == "double_protein" and not selections["protein"]:
+            continue
+        steps.append(step)
+    return steps
 
 
 def validate_calorie_goal(raw_text: str) -> Tuple[bool, Optional[int], str]:
