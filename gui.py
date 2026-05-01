@@ -1,4 +1,3 @@
-
 BG           = "#F5F0EB"   # page background
 CARD_BG      = "#FFFFFF"   # white card background
 HEADER_BG    = "#7B1113"   # dark chipotle red header
@@ -134,7 +133,7 @@ class ChipotleApp:
         self.scroll_canvas.itemconfig(self.content_window, width=event.width)
 
     def on_mousewheel(self, event):
-       """allow the window to scroll using a real scroll wheel"""
+        """allow the window to scroll using a real scroll wheel"""
         self.scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
 
     def on_scroll_update(self, first, last):
@@ -268,7 +267,7 @@ class ChipotleApp:
         accent_bars = {}
 
         def select(val):
-           """update row colors"""
+            """update row colors"""
             self.single_var.set(val)
             for v in row_widgets:
                 if v == val:
@@ -631,7 +630,7 @@ class ChipotleApp:
         frame_entry.pack(fill='x')
 
         Label(frame_entry, text="Calorie limit (kcal):",
-              font=("Helvetica", 11), bg=CARD_BG, fg=TEXT_MAIN).pack(side='left'
+              font=("Helvetica", 11), bg=CARD_BG, fg=TEXT_MAIN).pack(side='left')
         saved = self.selections.get("calorie_goal")
         if saved is None:
             self.entry_calorie_text = StringVar(value="")

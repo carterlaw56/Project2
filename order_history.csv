@@ -7,10 +7,12 @@ date,base,rice,beans,protein,double_protein,veggies,salsa,dairy,extras,qesa_vegg
 2026-04-30 17:31,Quesadilla,,,Chicken,False,,,,,True,,810,57,54,41
 2026-04-30 17:37,Quesadilla,,,Barbacoa,False,,,,,True,555,800,49,56,41
 2026-04-30 17:37,Tacos (3 Soft),Brown Rice,Black Beans,Carnitas,True,Fajita Veggies,Tomato Salsa,Cheese,,False,1111,1125,71,100,46
+2026-04-30 19:54,Bowl,,,,False,,,,,False,,0,0,0,0
 2026-04-30 19:52,Bowl,White Rice,,Chicken,False,Fajita Veggies,,,,False,,410,37,44,11
 2026-04-30 19:52,Bowl,,,,False,,,,,False,,0,0,0,0
 2026-04-30 19:52,Bowl,,,,False,,,,,False,,0,0,0,0
 2026-04-30 19:57,Tacos (3 Soft),White Rice,Pinto Beans,Carnitas,True,Fajita Veggies,Corn Salsa|Green Salsa|Red Salsa|Tomato Salsa,Sour Cream|Cheese,Guacamole|Queso|Lettuce,False,7777,1725,84,145,86
+2026-05-01 13:00,Bowl,Brown Rice,Black Beans,,True,Fajita Veggies,Corn Salsa,Cheese,Guacamole|Queso,False,,900,30,95,47
 2026-05-01 12:35,Bowl,White Rice,Black Beans,Chicken,True,,Tomato Salsa|Green Salsa,Cheese,Lettuce,False,800,855,82,71,28
 2026-05-01 12:37,Quesadilla,,,Barbacoa,False,,,,,True,888,800,49,56,41
 2026-05-01 13:05,Bowl,Brown Rice,Pinto Beans,,False,,,,,False,,340,12,57,7
